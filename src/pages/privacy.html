@@ -1,0 +1,80 @@
+        <header class="page-header">
+          <h1 class="page-title">Privacy</h1>
+          <p class="lead">Eddy collects nothing about you. No analytics, telemetry, crash reporting, accounts, backend or advertising.</p>
+        </header>
+
+        <section class="section" aria-labelledby="perm-title">
+          <div class="section-header">
+            <h2 id="perm-title" class="section-title">Permissions the extension asks for</h2>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label"><code>storage</code></h3>
+                <p class="row-desc">Eddy's settings and, only after you turn on Market data, the downloaded market-data cache. Kept on this device; not synced.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Access to playvortex.io</h3>
+                <p class="row-desc">To add Eddy's settings tab and its values on catalog and profile pages. Browsers list this as access to that site.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Nothing else</h3>
+                <p class="row-desc">No host permissions, and no <code>tabs</code>, <code>cookies</code>, <code>scripting</code>, <code>webRequest</code> or <code>identity</code>.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="net-title">
+          <div class="section-header">
+            <h2 id="net-title" class="section-title">Network requests</h2>
+          </div>
+          <div class="card prose">
+            <p>While <strong>Market data (Voltimons)</strong> is off, the default, Eddy makes no requests at all.</p>
+            <p>While it is on, Eddy's background worker requests exactly two addresses, <code>https://api.voltimons.io/items</code> and <code>https://api.voltimons.io/stats</code>, at most every 15 minutes. The requests carry no cookies, credentials, referrer, item IDs, page addresses or anything about you. The extension's security policy blocks every other connection.</p>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="read-title">
+          <div class="section-header">
+            <h2 id="read-title" class="section-title">On Vortex pages</h2>
+          </div>
+          <div class="card prose">
+            <p>Eddy reads only <strong>item IDs</strong>, the limited-item marker and the site's light or dark theme, to place its values.</p>
+            <ul>
+              <li>It never reads names, prices, sellers, accounts, balances or inventories.</li>
+              <li>It never reads cookies, page storage, session data or tokens.</li>
+              <li>It never calls Vortex's endpoints.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="site-title">
+          <div class="section-header">
+            <h2 id="site-title" class="section-title">This website</h2>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">No tracking</h3>
+                <p class="row-desc">No analytics, cookies, third-party scripts or web-font services. The font is served from this site.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Two preferences, in your browser</h3>
+                <p class="row-desc">The theme and the sidebar state are remembered in this browser's local storage. They never leave your device.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Optional Ko-fi link</h3>
+                <p class="row-desc">The “Support Eddy on Ko-fi” link in the footer is a plain link. Nothing is loaded from Ko-fi until you click it; it opens ko-fi.com in a new tab without a referrer, and Ko-fi's own privacy policy applies there.</p>
+              </div>
+            </div>
+          </div>
+        </section>

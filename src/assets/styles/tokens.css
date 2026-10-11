@@ -1,0 +1,230 @@
+/* Eddy site design tokens: the single source for colour, type, space, shape, size and motion.
+
+   Palette: Vortex's own `--palette-*` values (measured from playvortex.io's :root, recorded in
+   vortex-extension/docs/VORTEX_VISUAL_REFERENCE.md and re-checked live 2026-10-10). Voltimons' "ink" scale is the
+   same set of values (voltimons.io entry CSS, 2026-10-10: ink-950 #08050e … ink-100 #e5e5ea), with a purple primary
+   (volt-500 #b151ff). One palette therefore serves both references.
+
+   One deliberate deviation: purple *fills* behind white text use #9333ea (Vortex's own primary-hover) instead of
+   #a855f7, because white on #a855f7 is 3.96:1, under 4.5:1 for 14–16px text; their hover darkens to #7e22ce.
+   #a855f7 itself is kept for non-text marks (the brand mark). The extension's pages make the same choice
+   (docs/UI_DESIGN.md). Contrast pairs are checked in tests/tokens.test.js. */
+
+@font-face {
+  font-family: 'Figtree';
+  src: url('../fonts/figtree-latin-wght.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* --- Palette (raw values; components use the semantic tokens below) --- */
+  --palette-white: #ffffff;
+  --palette-black: #000000;
+  --palette-purple: #a855f7;
+  --palette-purple-hover: #9333ea;
+  --palette-purple-deep: #7e22ce;
+  --palette-purple-soft: #a78bfa;
+  --palette-purple-focus: #c084fc;
+  --palette-shell: #120b1b;
+  --palette-canvas: #171020;
+  --palette-content: #08050e;
+  --palette-surface: #0b0b12;
+  --palette-surface-raised: #15151f;
+  --palette-surface-hover: #1e1e29;
+  --palette-control: #26263a;
+  --palette-control-hover: #2f2f46;
+  --palette-border: #24242f;
+  --palette-border-strong: #33334a;
+  --palette-text: #e5e5ea;
+  --palette-text-soft: #d0d0da;
+  --palette-muted: #9a9aab;
+  --palette-muted-dim: #8a8a9c;
+  --palette-warning-surface: #23190c;
+  --palette-warning-text: #d9a441;
+  --palette-warning-border: #3d2e14;
+  --palette-info-surface: #101a2a;
+  --palette-info-border: #1f2f4a;
+  --palette-info-text: #60a5fa;
+  --palette-success: #22c55e;
+  --palette-success-surface: #0c1f14;
+  --palette-success-border: #14532d;
+  --palette-light-canvas: #f8f7fa;
+  --palette-light-surface: #efeaf5;
+  --palette-light-control: #e4e1e8;
+  --palette-light-muted: #5a5a70;
+
+  /* --- Semantic colours (dark: Vortex's default theme) --- */
+  color-scheme: dark;
+  --color-shell: var(--palette-shell);          /* top bar, sidebar, page edge */
+  --color-content: var(--palette-content);      /* main content panel */
+  --color-surface: var(--palette-surface-raised); /* .ui-card */
+  --color-surface-hover: var(--palette-surface-hover);
+  --color-popup: var(--palette-surface);        /* .ui-popup, tooltips */
+  --color-control: var(--palette-control);      /* secondary buttons */
+  --color-control-hover: var(--palette-control-hover);
+  --color-highlight: rgba(168, 85, 247, 0.16); /* a row reached by a link, briefly */
+  --color-border: var(--palette-border);
+  --color-border-strong: var(--palette-border-strong);
+  --color-text: var(--palette-white);           /* headings, nav labels, values */
+  --color-text-subtle: var(--palette-text);     /* body copy */
+  --color-muted: var(--palette-muted);
+  --color-faint: var(--palette-muted-dim);
+  --color-primary: var(--palette-purple-hover); /* fills behind white text (see header) */
+  --color-primary-hover: var(--palette-purple-deep);
+  --color-primary-mark: var(--palette-purple);  /* non-text accents: the brand mark, list markers */
+  --color-on-primary: var(--palette-white);
+  --color-link: var(--palette-purple-soft);
+  --color-focus: var(--palette-purple-focus);
+  --color-warning-surface: var(--palette-warning-surface);
+  --color-warning-text: var(--palette-warning-text);
+  --color-warning-border: var(--palette-warning-border);
+  --color-info-surface: var(--palette-info-surface);
+  --color-info-text: var(--palette-info-text);
+  --color-info-border: var(--palette-info-border);
+  --color-success-surface: var(--palette-success-surface);
+  --color-success-text: var(--palette-success);
+  --color-success-border: var(--palette-success-border);
+  --color-backdrop: rgba(0, 0, 0, 0.6);
+  --shadow-popup: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* --- Type (Vortex: Figtree; rem scale 11 · 12 · 13 · 14 · 15 · 16 · 18 · 20 · 24 · 32 · 40) --- */
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  --text-micro: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-caption: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-body-sm: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-4xl: 2rem;
+  --text-5xl: 2.5rem;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --leading-tight: 1.2;
+  --leading: 1.55;
+
+  /* --- Space (Vortex scale) --- */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+
+  /* --- Shape. The scale is Vortex's (`--radius-*` in playvortex.io/css/tokens.css); Voltimons, measured live
+     2026-10-10, sits on the same steps (12px buttons, 16px cards). Components use the semantic aliases. --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 999px;
+  --radius-mark: var(--radius-sm);       /* inline code, tiny marks */
+  --radius-tooltip: var(--radius-md);    /* Vortex .ui-tooltip-portal */
+  --radius-control: var(--radius-lg);    /* buttons, icon buttons, nav links, inputs, skip link, popups */
+  --radius-widget: var(--radius-xl);     /* banners, empty-state icon tiles */
+  --radius-panel: var(--radius-xl);      /* the main content panel (Vortex .site-main), dialogs */
+  --radius-card: var(--radius-2xl);      /* .ui-card sections, tables, row groups */
+  --radius-pill: var(--radius-full);     /* badges, the mobile tab bar */
+
+  /* --- Sizes (measured on Vortex) --- */
+  --control-height: 40px;
+  --control-height-sm: 32px;
+  --control-height-touch: 44px;
+  --icon-size: 20px;
+  --icon-size-sm: 14px;
+  --topbar-height: 82px;
+  --nav-width-expanded: 200px;
+  --nav-width-collapsed: 40px;
+  --site-gutter: var(--space-32);
+  --content-max: 1040px;
+  --tab-item-height: 52px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* --- Motion: Vortex's tokens (playvortex.io/css/tokens.css + motion.css). All drop to 0 under
+     prefers-reduced-motion (below), as on Vortex, so every transition and animation built on them stops. --- */
+  --motion-fast: 150ms;        /* hover, colour, small state changes */
+  --motion-normal: 200ms;      /* dialogs, theme cross-fade */
+  --motion-tab: 180ms;         /* selection indicator */
+  --motion-layout: 300ms;      /* sidebar width, label slide */
+  --motion-reveal: 500ms;      /* section entrance */
+  --motion-stagger: 18ms;
+  --motion-stagger-max: 180ms;
+  --motion-menu-exit: 120ms;
+  --motion-highlight: 1600ms;  /* a linked row's highlight fading out */
+  --motion-reveal-distance: var(--space-8);
+  --motion-popup-scale: 0.98;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-menu-in: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-menu-out: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* Light theme: Vortex's light tokens (`:root[data-theme="light"]`). */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-shell: var(--palette-light-surface);
+  --color-content: var(--palette-light-canvas);
+  --color-surface: var(--palette-white);
+  --color-surface-hover: var(--palette-light-surface);
+  --color-popup: var(--palette-white);
+  --color-control: var(--palette-light-control);
+  --color-control-hover: #d8d4de;
+  --color-highlight: rgba(147, 51, 234, 0.1);
+  --color-border: rgba(0, 0, 0, 0.12);
+  --color-border-strong: rgba(0, 0, 0, 0.2);
+  --color-text: var(--palette-black);
+  --color-text-subtle: #1c1c28;
+  --color-muted: var(--palette-light-muted);
+  --color-faint: var(--palette-light-muted);
+  --color-primary: var(--palette-purple-hover);
+  --color-primary-hover: var(--palette-purple-deep);
+  --color-primary-mark: var(--palette-purple-hover);
+  --color-link: var(--palette-purple-deep);
+  --color-focus: var(--palette-purple);
+  --color-warning-surface: #fbefcf;
+  --color-warning-text: #6e4a00;
+  --color-warning-border: #ecd28c;
+  --color-info-surface: #e8f0fd;
+  --color-info-text: #1d4ed8;
+  --color-info-border: #bcd0f5;
+  --color-success-surface: #e6f6ec;
+  --color-success-text: #166534;
+  --color-success-border: #b5e0c4;
+  --shadow-popup: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 800px) {
+  :root {
+    --site-gutter: var(--space-16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-normal: 0ms;
+    --motion-tab: 0ms;
+    --motion-layout: 0ms;
+    --motion-reveal: 0ms;
+    --motion-stagger: 0ms;
+    --motion-stagger-max: 0ms;
+    --motion-menu-exit: 0ms;
+    --motion-highlight: 0ms;
+  }
+}

@@ -1,0 +1,63 @@
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="page-header">
+            <h1 id="hero-title" class="hero-title">{{mark}}Eddy</h1>
+            <p class="lead">An independent browser extension that adds unofficial item values to <a href="https://playvortex.io" rel="noopener noreferrer">Vortex</a>, inspired by tools like RoPro and Rolimons.</p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="{{link:features}}">See what Eddy does{{icon:arrow}}</a>
+              <a class="btn btn-secondary" href="{{link:values}}">What the values mean</a>
+            </div>
+          </div>
+
+          <dl class="rows facts" aria-label="Eddy at a glance">
+            <div class="row"><dt class="row-desc">Status</dt><dd class="row-label">Built and tested locally <span class="pill pill-warning">Not released</span></dd></div>
+            <div class="row"><dt class="row-desc">Extension version</dt><dd class="row-label">{{version}}</dd></div>
+            <div class="row"><dt class="row-desc">Browsers</dt><dd class="row-label">Chromium (Manifest V3)</dd></div>
+            <div class="row"><dt class="row-desc">Permissions</dt><dd class="row-label"><code>storage</code> only</dd></div>
+          </dl>
+        </section>
+
+        <div class="section banner banner-warning" role="note">
+          {{icon:clock}}
+          <p><strong>Not available yet.</strong> Public release waits until Voltimons confirms that Eddy may reuse and display its market data. <a href="{{link:get}}">Why, and what happens next</a></p>
+        </div>
+
+        <section class="section" aria-labelledby="does-title">
+          <div class="section-header">
+            <h2 id="does-title" class="section-title">What Eddy does</h2>
+            <span class="section-meta">In the current build</span>
+          </div>
+          <div class="card-grid">
+            <article class="card card-link">
+              <h3 class="card-title">{{icon:values}}<a class="card-cover" href="{{link:features}}#catalog-worth">Catalog worth</a>{{icon:arrow}}</h3>
+              <p>On Vortex's catalog, limited items get a small Worth line from Voltimons' unofficial market data, with sorting and value filters. Off until you turn on Market data.</p>
+            </article>
+            <article class="card card-link">
+              <h3 class="card-title">{{icon:features}}<a class="card-cover" href="{{link:features}}#avatar-value">Avatar Value</a>{{icon:arrow}}</h3>
+              <p>On profiles, the combined worth of the limited items a profile lists as worn. It is not an inventory or account value.</p>
+            </article>
+            <article class="card card-link">
+              <h3 class="card-title">{{icon:popup}}<a class="card-cover" href="{{link:features}}#popup">Popup and settings</a>{{icon:arrow}}</h3>
+              <p>A toolbar popup to search and sort estimated values, and an Eddy tab inside Vortex's own Settings page.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="honest-title">
+          <div class="section-header">
+            <h2 id="honest-title" class="section-title">Honest by design</h2>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h3 class="card-title">{{icon:info}}Clearly labelled</h3>
+              <p>Estimates are always in <span class="estimate">italics</span> and never shown as RAP or an official price. Missing values say so in words, never as a made-up number.</p>
+            </article>
+            <article class="card">
+              <h3 class="card-title">{{icon:privacy}}Reads only item IDs</h3>
+              <p>On Vortex pages Eddy reads item IDs and nothing else: no names, prices, accounts, cookies or inventories. <a href="{{link:privacy}}">Privacy details</a></p>
+            </article>
+            <article class="card">
+              <h3 class="card-title">{{icon:check}}Off by default</h3>
+              <p>Market data is off until you turn it on. While it is off, Eddy makes no network requests at all.</p>
+            </article>
+          </div>
+        </section>

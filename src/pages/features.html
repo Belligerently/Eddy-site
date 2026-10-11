@@ -1,0 +1,101 @@
+        <header class="page-header">
+          <h1 class="page-title">Features</h1>
+          <p class="lead">What the current build of Eddy does, what is planned, and where it has been tested. Version {{version}}, built and tested locally, not released.</p>
+        </header>
+
+        <section class="section" aria-labelledby="built-title">
+          <div class="section-header">
+            <h2 id="built-title" class="section-title">In the current build <span class="pill pill-success">{{icon:check}}Implemented</span></h2>
+          </div>
+          <div class="rows">
+            <div class="row" id="catalog-worth">
+              <div class="row-info">
+                <h3 class="row-label">Catalog worth, filters and sorting</h3>
+                <p class="row-desc">Limited items on Vortex's catalog get a Worth line from Voltimons' unofficial market data, with value presets, a min–max range and sorting. Filters apply to the cards already on the page. Only while Market data is on.</p>
+              </div>
+            </div>
+            <div class="row" id="avatar-value">
+              <div class="row-info">
+                <h3 class="row-label">Avatar Value on profiles</h3>
+                <p class="row-desc">The combined worth of the limited items a profile lists as worn. Items without a worth make it read “≥ …, incomplete”. Only while Market data is on.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Inventory section on profiles</h3>
+                <p class="row-desc">Shows every total as “Unavailable” and explains why: Vortex inventories are not public.</p>
+              </div>
+            </div>
+            <div class="row" id="popup">
+              <div class="row-info">
+                <h3 class="row-label">Toolbar popup</h3>
+                <p class="row-desc">Search, value presets, “only items with an estimate” and sorting over a labelled sample dataset. Demo data is off by default.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Settings, in the extension and inside Vortex</h3>
+                <p class="row-desc">Theme, demo data, market data, display toggles and reset, on Eddy's own settings page and in an Eddy tab inside Vortex's Settings.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Estimated-value dataset format</h3>
+                <p class="row-desc">A versioned dataset format with a strict validator, ready for a reviewed community dataset.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="planned-title">
+          <div class="section-header">
+            <h2 id="planned-title" class="section-title">Planned <span class="pill">{{icon:clock}}Not in this version</span></h2>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Public release</h3>
+                <p class="row-desc">Blocked until Voltimons confirms that its data may be reused and displayed. <a href="{{link:get}}">More on the release</a></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Real RAP from completed sales</h3>
+                <p class="row-desc">Needs an approved source of completed sales. Until then Eddy shows no RAP of its own.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Inventory totals</h3>
+                <p class="row-desc">Vortex inventories are not public, so inventory statistics cannot work yet.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-info">
+                <h3 class="row-label">Community estimated values</h3>
+                <p class="row-desc">Estimates from a reviewed community dataset, in the format above.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="browsers-title">
+          <div class="section-header">
+            <h2 id="browsers-title" class="section-title">Supported browsers</h2>
+            <span class="section-meta">Manifest V3, Chromium only</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th scope="col">Browser</th><th scope="col">Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Chrome for Testing 156</th><td><span class="pill pill-success">{{icon:check}}Tested</span> Automated popup, settings and on-page tests passed</td></tr>
+                <tr><th scope="row">Brave 1.97</th><td><span class="pill pill-success">{{icon:check}}Tested</span> Automated popup, settings and on-page tests passed</td></tr>
+                <tr><th scope="row">Google Chrome</th><td><span class="pill">Expected</span> Not tested: branded Chrome 137+ cannot load unpacked extensions from the command line</td></tr>
+                <tr><th scope="row">Microsoft Edge</th><td><span class="pill">Expected</span> Not tested</td></tr>
+                <tr><th scope="row">Firefox</th><td><span class="pill pill-warning">Not supported</span> Not in this phase</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
