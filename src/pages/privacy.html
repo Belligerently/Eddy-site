@@ -1,6 +1,6 @@
         <header class="page-header">
           <h1 class="page-title">Privacy</h1>
-          <p class="lead">Eddy collects nothing about you. No analytics, telemetry, crash reporting, accounts, backend or advertising.</p>
+          <p class="lead">Eddy collects nothing about you. No analytics, telemetry, crash reporting, accounts, backend or advertising. What it reads on Vortex pages is used in your browser and sent nowhere. Only Market data, which is off by default, makes network requests: to Voltimons, which receives what is listed below.</p>
         </header>
 
         <section class="section" aria-labelledby="perm-title">
@@ -11,13 +11,13 @@
             <div class="row">
               <div class="row-info">
                 <h3 class="row-label"><code>storage</code></h3>
-                <p class="row-desc">Eddy's settings and, only after you turn on Market data, the downloaded market-data cache. Kept on this device; not synced.</p>
+                <p class="row-desc">Eddy's settings and, only after you turn on Market data, the downloaded market data (item IDs and numbers only) and its refresh schedule. Kept in this browser profile; not synced. Turning Market data off deletes the downloaded data (a failed delete is retried); only the schedule's times are kept.</p>
               </div>
             </div>
             <div class="row">
               <div class="row-info">
                 <h3 class="row-label">Access to playvortex.io</h3>
-                <p class="row-desc">To add Eddy's settings tab and its values on catalog and profile pages. Browsers list this as access to that site.</p>
+                <p class="row-desc">To add Eddy's values on catalog and profile pages, an Eddy tab in Vortex's Settings and an “Eddy settings” entry in its account menu. Browsers list this as access to that site.</p>
               </div>
             </div>
             <div class="row">
@@ -35,7 +35,9 @@
           </div>
           <div class="card prose">
             <p>While <strong>Market data (Voltimons)</strong> is off, the default, Eddy makes no requests at all.</p>
-            <p>While it is on, Eddy's background worker requests exactly two addresses, <code>https://api.voltimons.io/items</code> and <code>https://api.voltimons.io/stats</code>, at most every 15 minutes. The requests carry no cookies, credentials, referrer, item IDs, page addresses or anything about you. The extension's security policy blocks every other connection.</p>
+            <p>While it is on, only Eddy's background worker makes requests, and only to two addresses: <code>https://api.voltimons.io/items</code> and <code>https://api.voltimons.io/stats</code>. It asks when a Vortex page needs data, at most once every 15 minutes. After a failure it waits 15 minutes, then 30, 60 and 120 minutes, then 6 hours. The extension's security policy blocks every other connection.</p>
+            <p><strong>What Voltimons receives.</strong> As with any website visit, Voltimons receives your IP address and your browser's User-Agent. Each request's <code>Origin</code> header also names Eddy's extension ID, which tells Voltimons the request came from Eddy. Eddy adds nothing else: no cookies, credentials, referrer, item IDs, page addresses, Vortex user IDs or account data.</p>
+            <p>A refused request still sends this. When last checked (10 October 2026), Voltimons' API accepted requests only from its own website. While Market data is on, Eddy still sends its requests (at most every 6 hours once failures add up), but the browser blocks the replies, so Eddy gets no data.</p>
           </div>
         </section>
 
@@ -44,12 +46,16 @@
             <h2 id="read-title" class="section-title">On Vortex pages</h2>
           </div>
           <div class="card prose">
-            <p>Eddy reads only <strong>item IDs</strong>, the limited-item marker and the site's light or dark theme, to place its values.</p>
+            <p>Eddy reads only what it needs to place its values and settings, and sends none of it anywhere:</p>
             <ul>
-              <li>It never reads names, prices, sellers, accounts, balances or inventories.</li>
-              <li>It never reads cookies, page storage, session data or tokens.</li>
-              <li>It never calls Vortex's endpoints.</li>
+              <li><strong>Catalog:</strong> each card's item ID, confirmed by the card's own link, and whether the card is marked limited.</li>
+              <li><strong>Profiles:</strong> the item IDs in the links of the items the profile lists as worn (for Avatar Value), and the user ID in the page address (only for the Voltimons player link below, while Market data is on).</li>
+              <li><strong>Settings:</strong> the structure of the tab list, panel and account menu (their class names), to add Eddy's tab and its “Eddy settings” entry.</li>
+              <li><strong>Item pages:</strong> nothing. Eddy adds nothing there.</li>
+              <li><strong>Every page:</strong> the site's light or dark theme.</li>
             </ul>
+            <p>It never reads names, prices, sellers, account details, balances or inventories; never reads cookies, page storage, session data or tokens; and never calls Vortex's endpoints. It adds its own elements to the page and, only when you use its filters, reorders or hides catalog cards, restoring them when you clear the filters.</p>
+            <p><strong>Voltimons player link.</strong> Only while Market data is on, the Limited RAP entry on a Vortex profile links to that player's page on Voltimons, using the user ID from the profile's address. Eddy never requests that page. If you click the link, your browser opens it in a new tab with no referrer or opener, and Voltimons receives the address, including that public user ID, along with what any page you open sends, such as your IP address.</p>
           </div>
         </section>
 

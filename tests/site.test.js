@@ -61,6 +61,28 @@ test('the 404 page uses root-absolute links (hosts serve it at any depth)', () =
   for (const ref of [...attrs(html['404'], 'link', 'href'), ...attrs(html['404'], 'script', 'src')]) assert.ok(ref.startsWith('/'), ref);
 });
 
+test('the 404 page follows basePath, so it works from a sub-path such as /Eddy-site/', () => {
+  const saved = config.basePath;
+  try {
+    config.basePath = '/Eddy-site/';
+    const src = renderPage(NOT_FOUND);
+    const refs = [...attrs(src, 'a', 'href'), ...attrs(src, 'link', 'href'), ...attrs(src, 'script', 'src')].filter((r) => !/^(https?:|#)/.test(r));
+    assert.ok(refs.length > 10, 'expected the shell, nav and asset links');
+    for (const ref of refs) {
+      assert.ok(ref.startsWith('/Eddy-site/'), ref);
+      let target = join(out, ref.slice('/Eddy-site/'.length));
+      if (existsSync(target) && statSync(target).isDirectory()) target = join(target, 'index.html');
+      assert.ok(existsSync(target), `${ref} → missing ${target}`);
+    }
+    for (const bad of ['Eddy-site/', '/Eddy-site', '']) {
+      config.basePath = bad;
+      assert.throws(() => renderPage(NOT_FOUND), /basePath/, bad);
+    }
+  } finally {
+    config.basePath = saved;
+  }
+});
+
 test('no third-party scripts, stylesheets, fonts or frames', () => {
   for (const [id, src] of Object.entries(html)) {
     for (const ref of [...attrs(src, 'script', 'src'), ...attrs(src, 'link', 'href')]) assert.ok(!/^https?:/.test(ref), `${id}: ${ref}`);

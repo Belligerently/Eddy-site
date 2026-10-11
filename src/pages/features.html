@@ -35,7 +35,7 @@
             <div class="row">
               <div class="row-info">
                 <h3 class="row-label">Settings, in the extension and inside Vortex</h3>
-                <p class="row-desc">Theme, demo data, market data, display toggles and reset, on Eddy's own settings page and in an Eddy tab inside Vortex's Settings.</p>
+                <p class="row-desc">Theme, demo data, market data, display toggles and reset, on Eddy's own settings page and in an Eddy tab inside Vortex's Settings. Eddy also adds an “Eddy settings” entry to Vortex's account menu. Market data can be turned on only on Eddy's own settings page; inside Vortex it can only be turned off.</p>
               </div>
             </div>
             <div class="row">
@@ -55,7 +55,7 @@
             <div class="row">
               <div class="row-info">
                 <h3 class="row-label">Public release</h3>
-                <p class="row-desc">Blocked until Voltimons confirms that its data may be reused and displayed. <a href="{{link:get}}">More on the release</a></p>
+                <p class="row-desc">Blocked on three open conditions: confirmed authorisation from Vortex, Voltimons' permission to reuse and display its data, and access to Voltimons' API. <a href="{{link:get}}">More on the release</a></p>
               </div>
             </div>
             <div class="row">
@@ -82,7 +82,7 @@
         <section class="section" aria-labelledby="browsers-title">
           <div class="section-header">
             <h2 id="browsers-title" class="section-title">Supported browsers</h2>
-            <span class="section-meta">Manifest V3, Chromium only</span>
+            <span class="section-meta">Manifest V3, Chromium 111 or later</span>
           </div>
           <div class="table-wrap">
             <table class="table">
@@ -90,8 +90,8 @@
                 <tr><th scope="col">Browser</th><th scope="col">Status</th></tr>
               </thead>
               <tbody>
-                <tr><th scope="row">Chrome for Testing 156</th><td><span class="pill pill-success">{{icon:check}}Tested</span> Automated popup, settings and on-page tests passed</td></tr>
-                <tr><th scope="row">Brave 1.97</th><td><span class="pill pill-success">{{icon:check}}Tested</span> Automated popup, settings and on-page tests passed</td></tr>
+                <tr><th scope="row">Chrome for Testing 156</th><td><span class="pill pill-success">{{icon:check}}Tested</span> Automated popup, settings and on-page tests passed, offline against local replicas of Vortex and Voltimons</td></tr>
+                <tr><th scope="row">Brave 1.97</th><td><span class="pill pill-success">{{icon:check}}Tested</span> Automated popup, settings and on-page tests passed, offline against local replicas of Vortex and Voltimons</td></tr>
                 <tr><th scope="row">Google Chrome</th><td><span class="pill">Expected</span> Not tested: branded Chrome 137+ cannot load unpacked extensions from the command line</td></tr>
                 <tr><th scope="row">Microsoft Edge</th><td><span class="pill">Expected</span> Not tested</td></tr>
                 <tr><th scope="row">Firefox</th><td><span class="pill pill-warning">Not supported</span> Not in this phase</td></tr>

@@ -2,7 +2,7 @@
 // Used by both the build (scripts/build.js) and the dev server (scripts/serve.js), so they always match.
 //
 // Links are relative to each page, so the built site works from a domain root or a sub-path. The 404 page is the
-// exception: a host serves it at any depth, so its links are root-absolute.
+// exception: a host serves it at any depth, so its links are root-absolute, under site.config.js basePath.
 
 import { readFileSync } from 'node:fs';
 import config from '../site.config.js';
@@ -15,14 +15,16 @@ const escape = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': 
 
 /** Prefix that leads from a page back to the site root. */
 function rootPrefix(page) {
-  if (page.id === '404') return '/';
+  if (page.id === '404') {
+    if (!/^\/(?:[^/]+\/)*$/.test(config.basePath)) throw new Error(`site.config.js basePath must start and end with '/': ${config.basePath}`);
+    return config.basePath;
+  }
   const depth = outputFile(page).split('/').length - 1;
   return depth === 0 ? './' : '../'.repeat(depth);
 }
 
 function href(prefix, path) {
   const rel = path.replace(/^\//, '');
-  if (prefix === '/') return `/${rel}`;
   return rel === '' ? prefix : `${prefix}${rel}`;
 }
 

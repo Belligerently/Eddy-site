@@ -12,5 +12,12 @@ export default {
   kofiUrl: 'https://ko-fi.com/zaflalo',
 
   /** Shown in the footer and on the Get Eddy page. Keep in step with the extension's package.json. */
-  extensionVersion: '0.2.2',
+  extensionVersion: '0.2.5',
+
+  /**
+   * The URL path the site is served from: '/' at a domain root, or e.g. '/Eddy-site/' for a project sub-path. Only
+   * 404.html uses it (a host serves that page at any depth, so its links must be root-absolute); every other page
+   * links relatively and works anywhere. Must start and end with '/'.
+   */
+  basePath: '/',
 };

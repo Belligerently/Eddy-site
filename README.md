@@ -23,13 +23,29 @@ npm run verify        # all of the above
 `--port=NNNN` (or `PORT=NNNN`) changes the server port. `test:browser` finds Playwright's Chrome for Testing,
 then installed Chrome, Brave or Chromium; set `BROWSER=/path/to/chrome` to choose one.
 
-`dist/` is plain static files. Any static host can serve it, from a domain root or a sub-path (links are relative).
-Configure the host to serve `404.html` for unknown paths. Nothing is deployed by these scripts.
+These commands are all local: they build, serve on `127.0.0.1` and test. None of them deploys or publishes anything.
+
+## Deployment (not decided)
+
+No hosting provider, domain or deployment process has been chosen, and nothing in this repository deploys the
+site. `dist/` is git-ignored build output, so whatever deploys the site must run `npm run build` (or receive a
+built `dist/`).
+
+`dist/` is plain static files that any static host can serve:
+
+- **From a domain root or a sub-path.** Every page links relatively and works at any path. The exception is
+  `404.html`, which a host serves at any depth, so its links are root-absolute. They start with `basePath` in
+  `site.config.js`: leave it as `'/'` for a domain root, or set it to the sub-path (e.g. `'/Eddy-site/'` for a
+  GitHub Pages project site) before building.
+- **404s.** Configure the host to serve `404.html` for unknown paths.
+- **Headers.** The site sets no HTTP headers itself. Security headers (CSP and so on) would be host configuration.
+
+Decisions still open: the host, the domain or sub-path (and so `basePath`), and how the build reaches the host.
 
 ## Structure
 
 ```
-site.config.js            name, Ko-fi URL, extension version
+site.config.js            name, Ko-fi URL, extension version, base path (for 404.html)
 src/site.js               the page list: routes, labels, icons, nav groups, titles
 src/layout.js             shared shell: top bar, sidebar, mobile tab bar, footer
 src/icons.js              inline SVG icons and the Eddy mark
@@ -145,5 +161,5 @@ font or network call is added.
   bar is reproduced from measured CSS values, not from screenshots.
 - There are no forms, dropdown menus, dialogs or asynchronous operations, so there are no loading states, form
   validation or modal animations. None were added for their own sake.
-- The site's content mirrors the extension's README and docs as of version 0.2.2. Update `site.config.js` and the
+- The site's content mirrors the extension's README and docs as of version 0.2.5. Update `site.config.js` and the
   pages when the extension changes.
