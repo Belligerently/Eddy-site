@@ -103,6 +103,17 @@ layout change and a 500ms reveal.
 - **Performance:** only `transform`, `opacity`, colours and the rail width animate, and the tests measure zero
   layout shift.
 - **Reduced motion:** under `prefers-reduced-motion`, every motion token is 0ms and no animation runs.
+- **Rules found in the animation audit** (each has a browser regression test):
+  - The theme switch and a restored page (Back or another tab) apply their state in one frame, with
+    interaction transitions suppressed (`withoutTransitions`). Only the theme button's own icons animate.
+  - Hover styles apply only under `@media (hover: hover)`, so taps leave no sticky hover; `:active` gives
+    touch feedback.
+  - The sliding fill always passes under labels (`z-index` 0 vs 1 inside the rail and tab bar).
+  - The fill is hidden before first paint (`indicator-pending`) until its slide starts, so it never appears at
+    its destination first and then jumps.
+  - A rail tooltip waits for the rail to stop moving before it opens. Tooltips follow their control on
+    resize, and close when it disappears.
+  - Exit animations count as over when cancelled, not just when they end.
 - **No view transitions.** Chrome sends all input to `<html>` while a view transition runs, so clicks made during
   one are lost. Instead, the theme switches instantly and page changes use the FLIP slide. A test guards this.
 

@@ -196,8 +196,10 @@ ul[role='list'] {
     color var(--motion-fast) var(--ease-standard);
 }
 
-.icon-btn:hover {
-  background: var(--color-control);
+@media (hover: hover) {
+  .icon-btn:hover {
+    background: var(--color-control);
+  }
 }
 
 .icon-btn:active {
@@ -319,16 +321,20 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
     color var(--motion-fast) var(--ease-standard);
 }
 
-.nav-link:hover {
-  background: var(--color-control);
+@media (hover: hover) {
+  .nav-link:hover {
+    background: var(--color-control);
+  }
 }
 
 .nav-link[aria-current='page'] {
   color: var(--color-on-primary);
 }
 
-.nav-link[aria-current='page']:hover {
-  background: transparent;
+@media (hover: hover) {
+  .nav-link[aria-current='page']:hover {
+    background: transparent;
+  }
 }
 
 .nav-icon {
@@ -372,9 +378,37 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
   color: var(--color-text);
 }
 
-.nav-link:hover .nav-indicator,
-.tab-link:hover .tab-indicator {
-  background: var(--color-primary-hover);
+/* One stacking order for the whole rail and tab bar (both are stacking contexts: sticky / fixed): the sliding
+   fill always passes *under* every link's icon and label. Without explicit layers, paint order followed the DOM,
+   so a fill moving down covered the labels it crossed and a fill moving up did not. */
+.nav-indicator,
+.tab-indicator {
+  z-index: 0;
+}
+
+.nav-icon,
+.nav-label,
+.tab-icon,
+.tab-label {
+  z-index: 1;
+}
+
+/* Set by the inline <head> script when this page was reached from a nav link and the fill is about to slide in:
+   the fill stays hidden until indicator.js starts the slide, so a page that paints before its scripts load
+   never shows the fill at its destination first and then jumps back. */
+.indicator-pending :is(.nav-indicator, .tab-indicator) {
+  visibility: hidden;
+}
+
+.indicator-pending :is(.nav-link, .tab-link)[aria-current='page'] {
+  color: var(--color-text);
+}
+
+@media (hover: hover) {
+  .nav-link:hover .nav-indicator,
+  .tab-link:hover .tab-indicator {
+    background: var(--color-primary-hover);
+  }
 }
 
 /* Content panel (Vortex .site-main: content colour, 1px border, 12px corners). */
@@ -442,9 +476,11 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
     color var(--motion-fast) var(--ease-standard);
 }
 
-.footer-link:hover {
-  background: var(--color-control);
-  color: var(--color-text);
+@media (hover: hover) {
+  .footer-link:hover {
+    background: var(--color-control);
+    color: var(--color-text);
+  }
 }
 
 .footer-link .icon:first-child {
@@ -571,8 +607,10 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
     transition: color var(--motion-fast) var(--ease-standard);
   }
 
-  .tab-link:hover {
-    color: var(--color-text);
+  @media (hover: hover) {
+    .tab-link:hover {
+      color: var(--color-text);
+    }
   }
 
   .tab-link[aria-current='page'] {
@@ -793,14 +831,23 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
     color var(--motion-fast) var(--ease-standard);
 }
 
-.card-link:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-hover);
+@media (hover: hover) {
+  .card-link:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover);
+  }
 }
 
-.card-link:is(:hover, :focus-within) .card-title > .icon:last-child {
+.card-link:focus-within .card-title > .icon:last-child {
   color: var(--color-link);
   transform: translateX(2px);
+}
+
+@media (hover: hover) {
+  .card-link:hover .card-title > .icon:last-child {
+    color: var(--color-link);
+    transform: translateX(2px);
+  }
 }
 
 /* --- Buttons (Vortex .btn-primary / .btn-secondary: 40px, 14/600, padding 8 16, radius 8) --------- */
@@ -838,13 +885,22 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
   color: var(--color-on-primary);
 }
 
-.btn-primary:is(:hover, :active) {
+.btn-primary:active {
   border-color: var(--color-primary-hover);
   background: var(--color-primary-hover);
 }
 
-.btn-primary:hover .icon:last-child {
-  transform: translateX(2px);
+@media (hover: hover) {
+  .btn-primary:hover {
+    border-color: var(--color-primary-hover);
+    background: var(--color-primary-hover);
+  }
+}
+
+@media (hover: hover) {
+  .btn-primary:hover .icon:last-child {
+    transform: translateX(2px);
+  }
 }
 
 .btn-secondary {
@@ -853,8 +909,10 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
   color: var(--color-text);
 }
 
-.btn-secondary:hover {
-  background: var(--color-control-hover);
+@media (hover: hover) {
+  .btn-secondary:hover {
+    background: var(--color-control-hover);
+  }
 }
 
 .btn-secondary:active {
@@ -1231,6 +1289,17 @@ html.js:not(.js-ready) :is(.nav-toggle, .theme-toggle) {
   to {
     opacity: 0;
   }
+}
+
+/* Theme switches and restored preferences apply in one frame (assets/js/lib/motion.js withoutTransitions).
+   A click on the theme button keeps that button's own icon cross-fade as feedback; a restore animates nothing. */
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after,
+.theme-switching *:not(.theme-toggle > .icon),
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

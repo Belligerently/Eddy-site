@@ -122,6 +122,17 @@ export function renderPage(page) {
       } catch (e) {}
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta && root.dataset.theme === 'light') meta.content = meta.dataset.light;
+      // Arriving from a nav link: keep the current-page fill hidden until assets/js/components/indicator.js
+      // starts its slide (it clears the class), so the fill never shows at its destination and then jumps.
+      // Same key and 1500ms window as indicator.js; the timer is only a fallback if the module never runs.
+      try {
+        var slide = JSON.parse(sessionStorage.getItem('eddy-site.indicator'));
+        var age = slide ? Date.now() - slide.at : Infinity;
+        if (age < 1500 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          root.classList.add('indicator-pending');
+          setTimeout(function () { root.classList.remove('indicator-pending'); }, 1500 - age);
+        }
+      } catch (e) {}
     })(document.documentElement);
   </script>
   <script type="module" src="${asset('js/main.js')}"></script>

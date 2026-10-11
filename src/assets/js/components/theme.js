@@ -1,8 +1,10 @@
-// Dark / light theme toggle. The switch is instant: a cross-fade would need a view transition, and Chrome routes
-// all input to <html> while one runs, so the page would ignore clicks for its duration. The button's own sun/moon
-// icons cross-fade in CSS.
+// Dark / light theme toggle. The switch is instant and uniform: every colour changes in the same frame, with the
+// elements' hover transitions suppressed (withoutTransitions), so no part of the page lags behind. A cross-fade
+// would need a view transition, and Chrome routes all input to <html> while one runs. The button's own sun/moon
+// icons still cross-fade.
 
 import { isLight, setTheme } from '../lib/preferences.js';
+import { withoutTransitions } from '../lib/motion.js';
 
 export function initTheme() {
   const button = document.querySelector('.theme-toggle');
@@ -12,8 +14,13 @@ export function initTheme() {
   const sync = () => button.setAttribute('aria-pressed', String(isLight()));
 
   button.addEventListener('click', () => {
-    setTheme(isLight() ? 'dark' : 'light');
-    sync();
+    withoutTransitions(
+      () => {
+        setTheme(isLight() ? 'dark' : 'light');
+        sync();
+      },
+      { keepControlFeedback: true },
+    );
   });
 
   sync();

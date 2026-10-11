@@ -78,7 +78,16 @@ try {
       try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__shifts.push({ value: e.value, input: e.hadRecentInput }); }).observe({ type: 'layout-shift', buffered: true }); } catch {}
       window.__indicatorSlid = false;
       const animate = Element.prototype.animate;
-      Element.prototype.animate = function (...args) { if (this.matches('.nav-indicator, .tab-indicator')) window.__indicatorSlid = true; return animate.apply(this, args); };
+      Element.prototype.animate = function (...args) {
+        const anim = animate.apply(this, args);
+        if (this.matches('.nav-indicator, .tab-indicator')) {
+          window.__indicatorSlid = true;
+          const pauseAt = sessionStorage.getItem('test:pauseIndicatorAt');
+          if (pauseAt !== null) { anim.pause(); anim.currentTime = Number(pauseAt); }
+        }
+        return anim;
+      };
+      try { new PerformanceObserver((l) => { if (l.getEntries().length && window.__pendingAtFirstPaint === undefined) { const i = document.querySelector('.nav-indicator, .tab-indicator'); window.__pendingAtFirstPaint = document.documentElement.classList.contains('indicator-pending') && !!i && getComputedStyle(i).visibility === 'hidden'; } }).observe({ type: 'paint', buffered: true }); } catch {}
       addEventListener('pageshow', (e) => { window.__persisted = e.persisted; });
     `,
   });
@@ -498,6 +507,213 @@ try {
   });
 
   // ---------------------------------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------------------------------
+  console.log('\nAnimation audit (regressions)');
+  const transitions = (except = null) => page.eval(`document.getAnimations().filter((a) => a.constructor.name === 'CSSTransition' && !(${JSON.stringify(except)} && a.effect.target.matches(${JSON.stringify(except ?? '*')}))).map((a) => (a.effect.target.className?.baseVal ?? a.effect.target.className) + ':' + a.transitionProperty)`);
+  const leftovers = () => page.eval(`({ arriving: document.querySelectorAll('.is-arriving').length, pending: document.documentElement.classList.contains('indicator-pending'), guard: ['no-transitions', 'theme-switching'].some((c) => document.documentElement.classList.contains(c)) })`);
+  const sampleTop = async (x, y) => {
+    await page.send('DOM.enable');
+    const { backendNodeId } = await page.send('DOM.getNodeForLocation', { x, y, ignorePointerEventsNone: true });
+    const { node } = await page.send('DOM.describeNode', { backendNodeId });
+    const cls = node.attributes?.[node.attributes.indexOf('class') + 1] ?? '';
+    return `${node.nodeName.toLowerCase()}.${cls}`;
+  };
+  // Each audit check starts from a known state, so one failure cannot leave another passing vacuously.
+  const reset = async (vp = DESKTOP) => {
+    await page.media([]);
+    await page.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+    await page.send('Network.setBlockedURLs', { urls: [] });
+    await view(DESKTOP);
+    await page.goto(origin + '/');
+    await page.eval(`localStorage.clear(); sessionStorage.clear()`);
+    await view(vp);
+    await page.goto(origin + '/');
+    await page.mouseTo(700, 600);
+    await page.settle();
+  };
+  const auditCheck = (name, fn, vp) => check(name, async () => { await reset(vp); await fn(); });
+
+  await auditCheck('theme switch changes every colour in one frame (only the button icons animate)', async () => {
+    await page.goto(origin + '/');
+    await page.settle();
+    await page.click('.theme-toggle');
+    const others = await transitions('.theme-toggle > .icon');
+    const icons = await page.eval(`document.querySelector('.theme-toggle .theme-icon-moon').getAnimations().length`);
+    assert(others.length === 0, `${others.length} elements fade separately: ${[...new Set(others)].slice(0, 5).join(', ')}`);
+    assert(icons > 0, 'the button icon cross-fade was lost');
+    await page.settle();
+    await page.click('.theme-toggle');
+    await page.settle();
+    const left = await leftovers();
+    assert(!left.guard, 'no-transitions guard left on');
+  });
+  await auditCheck('rapid theme toggling (7×) ends consistent with no stray transitions', async () => {
+    await page.goto(origin + '/');
+    for (let i = 0; i < 7; i++) await page.click('.theme-toggle');
+    await page.settle();
+    const r = await page.eval(`({ theme: document.documentElement.dataset.theme, pressed: document.querySelector('.theme-toggle').getAttribute('aria-pressed'), meta: document.querySelector('meta[name=theme-color]').content, sun: getComputedStyle(document.querySelector('.theme-icon-sun')).opacity, moon: getComputedStyle(document.querySelector('.theme-icon-moon')).opacity })`);
+    assert(r.theme === 'light' && r.pressed === 'true' && r.meta === '#efeaf5' && r.sun === '0' && r.moon === '1', JSON.stringify(r));
+    await page.click('.theme-toggle');
+    await page.settle();
+  });
+  await auditCheck('rapid sidebar toggling (5×, then 4×) and mid-flight reversal end in clean states', async () => {
+    await page.goto(origin + '/');
+    const state = () => page.eval(`(() => { const l = getComputedStyle(document.querySelector('.nav-label')); return { c: document.documentElement.classList.contains('nav-collapsed'), e: document.querySelector('.nav-toggle').getAttribute('aria-expanded'), w: document.querySelector('.rail').getBoundingClientRect().width, label: l.opacity, shift: l.transform, line: getComputedStyle(document.querySelector('.nav-group-tools'), '::before').width }; })()`);
+    for (let i = 0; i < 5; i++) await page.click('.nav-toggle');
+    await page.settle();
+    let r = await state();
+    assert(r.c && r.e === 'false' && r.w === 40 && r.label === '0' && r.line === '24px', `after 5: ${JSON.stringify(r)}`);
+    for (let i = 0; i < 4; i++) await page.click('.nav-toggle');
+    await page.settle();
+    r = await state();
+    assert(r.c && r.w === 40, `after 9: ${JSON.stringify(r)}`);
+    await page.click('.nav-toggle'); // expand…
+    await sleep(100);
+    await page.click('.nav-toggle'); // …and reverse mid-way
+    await sleep(60);
+    await page.click('.nav-toggle'); // …and again
+    await page.settle();
+    r = await state();
+    assert(!r.c && r.e === 'true' && r.w === 200 && r.label === '1' && r.shift === 'none' && r.line === '184px', `after reversal: ${JSON.stringify(r)}`);
+  });
+  await auditCheck('resizing mid-animation snaps the rail to its end state (no stuck width)', async () => {
+    await page.goto(origin + '/');
+    await page.click('.nav-toggle');
+    await sleep(60);
+    await page.viewport(1300, 900);
+    await page.settle();
+    await sleep(200); // the resize guard clears 150ms after the last resize event
+    const r = await page.eval(`({ w: document.querySelector('.rail').getBoundingClientRect().width, resizing: document.documentElement.classList.contains('is-resizing'), anims: document.getAnimations().filter((a) => a.constructor.name === 'CSSTransition').length })`);
+    assert(r.w === 40 && !r.resizing && r.anims === 0, JSON.stringify(r));
+    await view(DESKTOP);
+    await page.click('.nav-toggle');
+    await page.settle();
+  });
+  await auditCheck('a rail tooltip requested mid-collapse appears beside the link once the rail settles', async () => {
+    await page.goto(origin + '/');
+    await page.click('.nav-toggle');
+    const target = await page.eval(`(() => { const r = document.querySelector('.side-nav a[href$="privacy/"]').getBoundingClientRect(); return { x: r.left + 20, y: r.top + r.height / 2 }; })()`);
+    await page.mouseTo(target.x, target.y); // the rail is still collapsing
+    const early = await tooltip();
+    await page.settle();
+    const t = await tooltip();
+    const link = await page.eval(`(() => { const r = document.querySelector('.side-nav a[href$="privacy/"]').getBoundingClientRect(); return { right: r.right, cy: r.top + r.height / 2 }; })()`);
+    assert(early?.text !== 'Privacy', `link tooltip shown before the rail settled: ${JSON.stringify(early)}`);
+    assert(t && t.text === 'Privacy' && Math.abs(t.left - (link.right + 12)) <= 1 && Math.abs(t.cy - link.cy) <= 1, `tooltip ${JSON.stringify(t)} vs link ${JSON.stringify(link)}`);
+    await page.mouseTo(900, 500);
+    await page.click('.nav-toggle');
+    await page.settle();
+  });
+  await auditCheck('a keyboard-opened tooltip follows its control on resize, and closes when the control disappears', async () => {
+    // Keyboard focus, not hover: with a mouse, the control moving away from the pointer already closes it.
+    const focusByTab = async (selector) => {
+      for (let i = 0; i < 12 && !(await page.eval(`document.activeElement.matches(${JSON.stringify(selector)})`)); i++) await page.key('Tab', 'Tab', 9);
+      await page.settle();
+    };
+    await focusByTab('.theme-toggle');
+    assert((await tooltip())?.text === 'Light theme', 'keyboard focus did not open the tooltip');
+    await page.viewport(1100, 900);
+    await sleep(100);
+    const t = await tooltip();
+    const b = await page.eval(`(() => { const r = document.querySelector('.theme-toggle').getBoundingClientRect(); return { cx: r.left + r.width / 2, bottom: r.bottom }; })()`);
+    assert(t && Math.abs((t.left + t.right) / 2 - b.cx) <= 2 && t.top > b.bottom, `tooltip ${JSON.stringify(t)} left behind by button ${JSON.stringify(b)}`);
+    await view(DESKTOP);
+    await page.mouseTo(700, 600);
+    await page.click('.nav-toggle'); // collapse, then focus a rail link and cross into the mobile layout
+    await page.settle();
+    await focusByTab('.side-nav a[href$="values/"]');
+    assert((await tooltip())?.text === 'Values', 'rail tooltip did not open on focus');
+    await page.viewport(600, 900, true);
+    await sleep(300);
+    assert((await tooltip()) === null, 'tooltip stayed after its link was hidden');
+  });
+  await auditCheck('a tooltip whose exit animation is cancelled (reduced motion switched on) still closes', async () => {
+    await page.goto(origin + '/');
+    await page.hover('.theme-toggle');
+    await page.settle();
+    await page.mouseTo(700, 500); // starts the 120ms exit
+    await page.media(REDUCED); // removes the animation mid-way, without an animationend
+    await sleep(300);
+    const t = await page.eval(`(() => { const t = document.querySelector('.tooltip'); return { hidden: t.hidden, state: t.dataset.motionState }; })()`);
+    await page.media([]);
+    assert(t.hidden, `tooltip stuck visible: ${JSON.stringify(t)}`);
+  });
+  for (const [from, to, label] of [['/', 'privacy/', 'down'], ['/privacy/', null, 'up']]) {
+    await auditCheck(`the sliding fill passes under the labels it crosses (moving ${label})`, async () => {
+      await page.goto(origin + from);
+      await page.eval(`sessionStorage.setItem('test:pauseIndicatorAt', '40')`);
+      await page.waitForLoad(() => page.click(to ? `.side-nav a[href$="${to}"]` : '.side-nav li:first-child a'));
+      const paused = await page.eval(`document.querySelector('.nav-indicator').getAnimations().map((a) => a.playState + '@' + a.currentTime).join()`);
+      assert(paused === 'paused@40', `slide not paused mid-flight (${paused}), so this check would prove nothing`);
+      const geo = await page.eval(`(() => { const i = document.querySelector('.nav-indicator').getBoundingClientRect(); const l = document.querySelector('.side-nav a[href$="values/"] .nav-label').getBoundingClientRect(); const top = Math.max(i.top, l.top), bottom = Math.min(i.bottom, l.bottom); return { x: Math.round(l.left + 6), y: Math.round((top + bottom) / 2), overlap: bottom - top }; })()`);
+      await page.eval(`sessionStorage.removeItem('test:pauseIndicatorAt')`);
+      assert(geo.overlap > 2, `the paused fill does not cross the Values label (${JSON.stringify(geo)})`);
+      const topmost = await sampleTop(geo.x, geo.y);
+      assert(topmost.startsWith('span.nav-label'), `${topmost} is painted over the Values label`);
+    });
+  }
+  await auditCheck('slow network: the fill stays hidden until its slide starts (no jump), then lands', async () => {
+    await page.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: -1, uploadThroughput: -1 });
+    try {
+      await page.goto(origin + '/');
+      await page.waitForLoad(() => page.click('.side-nav a[href$="privacy/"]'));
+      await sleep(400);
+      const r = await page.eval(`({ hiddenAtFirstPaint: window.__pendingAtFirstPaint, slid: window.__indicatorSlid })`);
+      assert(r.hiddenAtFirstPaint === true, `the fill was painted at its destination before the slide: ${JSON.stringify(r)}`);
+      assert(r.slid === true, 'no slide');
+    } finally {
+      await page.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+    }
+    await page.settle();
+    const left = await leftovers();
+    const vis = await page.eval(`getComputedStyle(document.querySelector('.nav-indicator')).visibility`);
+    assert(!left.pending && left.arriving === 0 && vis === 'visible', JSON.stringify({ left, vis }));
+  });
+  await auditCheck('if the scripts never load, the hidden fill still appears (fallback)', async () => {
+    await page.goto(origin + '/');
+    await page.send('Network.setBlockedURLs', { urls: ['*/assets/js/*'] });
+    try {
+      log = [];
+      await page.waitForLoad(() => page.click('.side-nav a[href$="values/"]'));
+      await sleep(1700);
+      const r = await page.eval(`({ pending: document.documentElement.classList.contains('indicator-pending'), vis: getComputedStyle(document.querySelector('.nav-indicator')).visibility })`);
+      assert(!r.pending && r.vis === 'visible', JSON.stringify(r));
+    } finally {
+      await page.send('Network.setBlockedURLs', { urls: [] });
+      log = [];
+    }
+  });
+  await auditCheck('after any navigation, no element is left invisible, offset, or mid-state', async () => {
+    for (const p of PAGES) {
+      await page.goto(origin + '/');
+      await page.waitForLoad(() => page.click(p.path === '/' ? '.brand' : `.side-nav a[href$="${p.path.slice(1)}"]`));
+      await page.settle();
+      const r = await page.eval(`(() => {
+        const stuck = [...document.querySelectorAll('.page > *')].filter((el) => { const s = getComputedStyle(el); return s.opacity !== '1' || s.translate !== 'none'; }).map((el) => el.className || el.tagName);
+        return { stuck, arriving: document.querySelectorAll('.is-arriving').length, pending: document.documentElement.classList.contains('indicator-pending'), running: document.getAnimations().filter((a) => a.playState === 'running').length };
+      })()`);
+      assert(r.stuck.length === 0 && r.arriving === 0 && !r.pending && r.running === 0, `${p.path}: ${JSON.stringify(r)}`);
+    }
+  });
+  await auditCheck('touch: tapping leaves no sticky hover state (theme button, tab links)', async () => {
+    await page.goto(origin + '/');
+    await page.tap('.theme-toggle');
+    await page.settle();
+    const bg = await page.eval(`getComputedStyle(document.querySelector('.theme-toggle')).backgroundColor`);
+    assert(bg === 'rgba(0, 0, 0, 0)', `theme button keeps a hover background after the tap: ${bg}`);
+    await page.tap('.theme-toggle');
+    await page.settle();
+  }, PHONE);
+  await auditCheck('mobile: the tab-bar fill slides under the labels and leaves nothing mid-state', async () => {
+    await page.goto(origin + '/');
+    await page.waitForLoad(() => page.tap('.tab-link[href$="get-eddy/"]'));
+    await page.settle();
+    const r = await page.eval(`({ slid: window.__indicatorSlid, z: [getComputedStyle(document.querySelector('.tab-indicator')).zIndex, getComputedStyle(document.querySelector('.tab-label')).zIndex], arriving: document.querySelectorAll('.is-arriving').length })`);
+    assert(r.slid && r.z[0] === '0' && r.z[1] === '1' && r.arriving === 0, JSON.stringify(r));
+  }, PHONE);
+  await view(DESKTOP);
+
   console.log('\nResilience');
   await check('without JavaScript: content, navigation and links work; the toggles are hidden', async () => {
     // With scripts disabled the page's own JS never runs; the harness re-enables evaluation only to inspect.
@@ -526,6 +742,10 @@ try {
     const shown = browser.waitFor((m) => m.method === 'Page.frameNavigated' || m.method === 'Page.loadEventFired', 5000).catch(() => null);
     await page.eval('history.back()');
     await shown;
+    // The link clicked before leaving was hovered then and is not now: its hover-out fade is real pointer
+    // feedback, not the resync, so it is the one transition allowed here.
+    const moving = await page.eval(`document.getAnimations().filter((a) => a.constructor.name === 'CSSTransition' && !(a.effect.target.matches('.side-nav a[href$="values/"]:not(:hover)') && a.transitionProperty === 'background-color')).map((a) => (a.effect.target.className?.baseVal ?? a.effect.target.className) + ':' + a.transitionProperty)`);
+    assert(moving.length === 0, `the restored page animated from its stale state: ${moving.join(', ')}`);
     await sleep(300);
     const r = await page.eval(`({ path: location.pathname, persisted: window.__persisted, theme: document.documentElement.dataset.theme, pressed: document.querySelector('.theme-toggle').getAttribute('aria-pressed'), collapsed: document.documentElement.classList.contains('nav-collapsed'), expanded: document.querySelector('.nav-toggle').getAttribute('aria-expanded'), meta: document.querySelector('meta[name=theme-color]').content })`);
     assert(r.path === '/', `on ${r.path}`);

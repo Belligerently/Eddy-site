@@ -6,6 +6,7 @@ import { initSidebar } from './components/sidebar.js';
 import { initTheme } from './components/theme.js';
 import { initTooltips } from './components/tooltip.js';
 import { applyStored, STORAGE_KEYS } from './lib/preferences.js';
+import { withoutTransitions } from './lib/motion.js';
 
 const root = document.documentElement;
 
@@ -14,10 +15,14 @@ const sidebar = initSidebar({ onChange: tooltips.refresh });
 const theme = initTheme();
 initIndicator();
 
+// Bring the page up to date with the stored preferences. This is a correction, not an interaction, so it is
+// applied without transitions (a restored page must not animate from its stale state).
 function resync() {
-  applyStored();
-  sidebar.sync();
-  theme.sync();
+  withoutTransitions(() => {
+    applyStored();
+    sidebar.sync();
+    theme.sync();
+  });
   tooltips.hide();
 }
 

@@ -9,7 +9,7 @@
 import { prefersReducedMotion } from '../lib/motion.js';
 
 const KEY = 'eddy-site.indicator';
-const MAX_AGE = 1500; // ms; a slower page load just skips the animation
+const MAX_AGE = 1500; // ms; a slower page load just skips the animation. Mirrored in layout.js's <head> script.
 const SOURCES = [
   { kind: 'nav', link: '.side-nav .nav-link', indicator: '.nav-indicator' },
   { kind: 'tab', link: '.tab-bar .tab-link', indicator: '.tab-indicator' },
@@ -33,34 +33,44 @@ function remember(e) {
 }
 
 function arrive() {
+  const root = document.documentElement;
   let saved;
   try {
     saved = JSON.parse(sessionStorage.getItem(KEY));
     sessionStorage.removeItem(KEY);
   } catch {
-    return;
+    saved = null;
   }
-  if (!saved || Date.now() - saved.at > MAX_AGE || prefersReducedMotion()) return;
+  const slide = saved && plan(saved);
+  if (slide) slide(); // starts the animation before the fill is revealed, so its first frame is the old spot
+  root.classList.remove('indicator-pending');
+}
+
+/** The slide for a saved rectangle, or null when it should not (or cannot) run. */
+function plan(saved) {
+  if (Date.now() - saved.at > MAX_AGE || prefersReducedMotion()) return null;
   const source = SOURCES.find((s) => s.kind === saved.kind);
   const el = source && document.querySelector(source.indicator);
-  if (!el || !el.getClientRects().length) return; // e.g. the window crossed the mobile breakpoint
+  if (!el || !el.getClientRects().length) return null; // e.g. the window crossed the mobile breakpoint
   const r = el.getBoundingClientRect();
   const dx = saved.x - r.left;
   const dy = saved.y - r.top;
-  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
-
-  const link = el.parentElement;
+  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return null;
   const parsed = parseFloat(getComputedStyle(el).getPropertyValue('--indicator-duration'));
   const duration = Number.isFinite(parsed) ? parsed : 300;
-  if (duration === 0) return;
-  // Until the fill arrives, the link keeps its ordinary text colour, so the label stays readable on the page.
-  link.classList.add('is-arriving');
-  const animation = el.animate(
-    [{ transform: `translate(${dx}px, ${dy}px) scale(${saved.w / r.width}, ${saved.h / r.height})` }, { transform: 'none' }],
-    { duration, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' },
-  );
-  const done = () => link.classList.remove('is-arriving');
-  animation.finished.then(done, done);
+  if (duration === 0) return null;
+
+  return () => {
+    const link = el.parentElement;
+    // Until the fill arrives, the link keeps its ordinary text colour, so the label stays readable on the page.
+    link.classList.add('is-arriving');
+    const animation = el.animate(
+      [{ transform: `translate(${dx}px, ${dy}px) scale(${saved.w / r.width}, ${saved.h / r.height})` }, { transform: 'none' }],
+      { duration, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' },
+    );
+    const done = () => link.classList.remove('is-arriving');
+    animation.finished.then(done, done);
+  };
 }
 
 export function initIndicator() {
